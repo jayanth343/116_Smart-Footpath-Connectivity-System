@@ -1,0 +1,50 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/pathfinders-backend', '.']
+  
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/pathfinders-backend']
+  
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'pathfinders-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/pathfinders-backend'
+      - '--region'
+      - 'asia-southeast1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '8GiB'
+      - '--cpu'
+      - '4'
+      - '--timeout'
+      - '300'
+      - '--container-concurrency'
+      - '5'
+      - '--ingress'
+      - 'all'
+      - '--port'
+      - '8080'
+      - '--revision-suffix'
+      - 'v1'
+      - '--probe-startup-path=/health'
+      - '--probe-startup-period'
+      - '10'
+      - '--probe-startup-initial-delay'
+      - '0'
+      - '--probe-startup-timeout'
+      - '1'
+      - '--probe-startup-failure-threshold'
+      - '3'
+
+
+images:
+  - 'gcr.io/$PROJECT_ID/pathfinders-backend'
